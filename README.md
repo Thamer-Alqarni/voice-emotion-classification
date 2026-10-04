@@ -1,32 +1,43 @@
-# Voice Emotion Classification and Expression Authenticity Exploration
+# Voice Emotion Classification and Expression-Label Exploration
 
-An academic machine-learning project that extracts audio features, prepares augmented samples, trains classifiers for vocal-emotion labels, and provides an interactive Gradio interface. A second classifier explores the dataset-provided genuine or simulated expression label; it does not establish whether a speaker is telling the truth.
+An academic machine-learning project for classifying vocal-emotion labels and exploring a second dataset-provided expression label from audio features. The notebook compares Random Forest, K-Nearest Neighbors, and Logistic Regression. It uses MFCCs, chroma, spectral contrast, and zero-crossing rate, then presents the selected models through a Gradio interface.
+
+> The second task predicts labels supplied with the dataset. It is not a lie detector and cannot establish whether a person is truthful or what they genuinely feel.
 
 ## Project files
 
-- `voice_emotion_classification.ipynb` - the Google Colab/Jupyter notebook.
-- `requirements.txt` - Python packages used by the notebook.
-- `data.zip` - required input data; not included in this repository.
+- `voice_emotion_classification.ipynb` - Google Colab/Jupyter workflow.
+- `requirements.txt` - Python dependencies.
+- `data.zip` - expected input archive; not included in this repository.
 
 ## Dataset layout
 
-The notebook expects `data.zip` at `/content/data.zip` in Google Colab. The archive should contain a `data/` directory, with one subfolder per label combination. Each subfolder name must contain two values separated by an underscore, and contain `.wav` audio files. The notebook parses those two folder-name values as the emotion and expression-authenticity labels.
+Upload `data.zip` to the Colab session. It should contain a `data/` directory with one subfolder per label combination, for example:
 
-Do not add private recordings or data you do not have permission to share. Provide your own approved dataset in the expected layout before running the notebook.
+```text
+data/
+  happy_genuine/
+    recording_001.wav
+  sad_simulated/
+    recording_002.wav
+```
+
+Folder names use `<emotion>_<expression-label>`; the notebook splits at the final underscore. WAV files should be organized directly inside each label folder. Use audio you are allowed to process and share. The dataset is intentionally not committed to this repository.
 
 ## Run in Google Colab
 
 1. Open `voice_emotion_classification.ipynb` in Google Colab.
-2. Upload your prepared archive to `/content/data.zip`.
-3. Run the notebook cells in order. The notebook extracts audio features, builds `dataset.csv`, trains and compares Random Forest, K-Nearest Neighbors, and Logistic Regression classifiers, and saves the selected models in the Colab session.
-4. Run the Gradio interface cell to try an audio recording.
+2. Upload your prepared `data.zip` to the Colab session as `/content/data.zip`.
+3. Run the cells from top to bottom.
+4. Review the grouped cross-validation results and the held-out test metrics and confusion matrices.
+5. Use the final Gradio interface to upload or record a WAV-compatible audio clip.
 
-The notebook uses `librosa` for audio processing and feature extraction (MFCC, chroma, spectral contrast, and zero-crossing rate), plus time-stretching, pitch-shifting, and noise augmentation.
+## Evaluation design
 
-## Evaluation note
+- Original recording files are split into training and test sets before augmentation.
+- Only training recordings are augmented with time stretching, pitch shifting, and noise.
+- Grouped cross-validation keeps all augmented variants of a source recording in one fold and selects models using Macro-F1.
+- The final held-out test set contains original recordings only. The notebook reports Macro-F1, Weighted-F1, Balanced Accuracy, per-class metrics, and confusion matrices.
 
-The current notebook augments recordings before splitting the resulting samples into training and test sets. Related versions of the same original recording may therefore appear in both sets, which can make reported evaluation results optimistic. For a reliable estimate, split original recordings first and apply augmentation only to the training portion.
+A small or imbalanced dataset can still produce uncertain estimates. If speaker IDs are available, group by speaker as well as recording so that a speaker does not appear in both training and test sets.
 
-## Dependencies
-
-Install the packages listed in `requirements.txt`. The notebook also contains an installation cell for Google Colab.
